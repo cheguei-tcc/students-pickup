@@ -1,8 +1,7 @@
 console.log('hey world')
 
-
 const testing = () => {
-               console.log('is lint work')
+  console.log('is lint work')
 }
 
 testing()

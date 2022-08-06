@@ -1,0 +1,35 @@
+{
+  "name": "students-pickup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky install",
+    "build": "tsc",
+    "dev": "ts-node-dev src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://iamseki:584c6948636834585197ae9b4523e769374d4987@github.com/cheguei-tcc/students-pickup.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cheguei-tcc/students-pickup/issues"
+  },
+  "homepage": "https://github.com/cheguei-tcc/students-pickup#readme",
+  "devDependencies": {
+    "@types/jest": "^28.1.6",
+    "@types/node": "^18.6.4",
+    "@typescript-eslint/eslint-plugin": "^5.32.0",
+    "eslint": "^8.21.0",
+    "husky": "^8.0.1",
+    "jest": "^28.1.3",
+    "lint-staged": "^13.0.3",
+    "ts-jest": "^28.0.7",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.7.4"
+  }
+}

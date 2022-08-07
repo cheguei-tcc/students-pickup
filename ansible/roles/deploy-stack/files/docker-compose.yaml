@@ -2,9 +2,7 @@ version: '3'
 
 services: 
   students-pickup:
-    build:
-      dockerfile: Dockerfile
-      context: ../.
+    image: christianseki/students-pickup:latest
     ports:
       - "3000:3000"
     deploy:

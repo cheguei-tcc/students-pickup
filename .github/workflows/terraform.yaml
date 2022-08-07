@@ -1,0 +1,50 @@
+name: Deploy AWS Resources
+on:
+  push:
+    branches: [main]
+
+jobs:
+  terraform-plan:
+    name: Plan Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: cd terraform && terraform init -input=false
+
+      - name: Terraform validation
+        run: cd terraform && terraform validate
+
+      - name: Terraform plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: cd terraform && terraform plan -input=false  
+
+  deploy-terraform:
+    name: Apply Terraform
+    needs: terraform-plan
+    runs-on: ubuntu-latest
+    environment:
+      name: deploy
+      url: ${{ steps.step_id.outputs.url_output }}
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Terraform init
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: cd terraform && terraform init -input=false
+
+    - name: Terraform validation
+      run: cd terraform && terraform validate
+
+    - name: Terraform apply
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: cd terraform && terraform apply -auto-approve -input=false      

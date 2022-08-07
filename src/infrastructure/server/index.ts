@@ -19,9 +19,9 @@ export const newServer = (logger: Logger) => {
       `connectig ${socket.id} on room: ${socket.request.headers['user-surrogate-key']}`
     );
 
-    // move every socket connected to it respectivelly room which now is tenantId SCHOOL
+    // move every socket connected to it respectivelly room which now is the school id for now
     const room = socket.request.headers['user-surrogate-key'];
-    io.in(socket.id).socketsJoin(room);
+    await socket.join(room);
 
     socket.on('disconnecting', (reason) => {
       logger.info(

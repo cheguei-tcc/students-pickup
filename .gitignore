@@ -2,3 +2,12 @@ coverage
 node_modules
 dist
 debug
+
+## CICD STUFF
+env.sh
+.terraform/*
+terraform.tfstate*
+.terraform*
+
+swarm-machines.pem
+hosts

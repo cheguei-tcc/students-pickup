@@ -1,0 +1,35 @@
+name: Deploy App
+on:
+  push:
+    branches: [master]
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  deploy-swarm:
+    name: Deploy to Swarm Cluster
+    needs: terraform-plan
+    runs-on: ubuntu-latest
+    steps:  
+    - name: Download swarm Hosts config 
+      uses: keithweaver/aws-s3-github-action@v1.0.0
+      with:
+        command: cp
+        source: ./hosts
+        destination: s3://swarm-machines-tf/hosts
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_region: sa-east-1
+    
+    - uses: actions/checkout@v1
+
+    - name: generate secret cert for ansible
+      run: |
+          echo ${{ secrets.SWARM_MACHINES_KEY }} | base64 -d > ansible/swarm-machines.pem
+          chmod 400 ansible/swarm-machines.pem
+      shell: bash
+
+    - name: run ansible playbook
+      run: cd ansible && ansible-playbook main.yaml

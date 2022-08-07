@@ -1,7 +1,7 @@
 name: Deploy AWS Resources
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
   terraform-plan:

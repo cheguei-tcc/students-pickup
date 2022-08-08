@@ -25,7 +25,7 @@ const initDependencies = async (config: Config) => {
 
   const positionMessageConsumer = Consumer.create({
     region: config.awsRegion,
-    queueUrl: config.queue,
+    queueUrl: config.queueUrl,
     handleMessage: async (message) =>
       positionConsumerService.handle(
         JSON.parse(message.Body) as PositionMessage

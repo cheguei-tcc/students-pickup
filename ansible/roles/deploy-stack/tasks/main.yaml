@@ -10,6 +10,6 @@
     compose:
       - /opt/docker-compose.yaml
   environment:
-    QUEUE: ${QUEUE}
+    STUDENTS_PICKUP_QUEUE_URL: ${STUDENTS_PICKUP_QUEUE_URL}
     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
     AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}

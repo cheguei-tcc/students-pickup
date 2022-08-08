@@ -23,9 +23,7 @@ const initDependencies = async (config: Config) => {
 
   const positionConsumerService = newPositionConsumerService(socketIOAdapter);
 
-  logger.info(`queueUrl => ${config.queueUrl}`);
-  logger.info('ENV:');
-  logger.info(JSON.stringify(process.env));
+  logger.info(`connecting consumer on queueUrl => ${config.queueUrl}`);
 
   const positionMessageConsumer = Consumer.create({
     region: config.awsRegion,

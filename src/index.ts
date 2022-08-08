@@ -24,6 +24,7 @@ const initDependencies = async (config: Config) => {
   const positionConsumerService = newPositionConsumerService(socketIOAdapter);
 
   const positionMessageConsumer = Consumer.create({
+    region: config.awsRegion,
     queueUrl: config.queue,
     handleMessage: async (message) =>
       positionConsumerService.handle(

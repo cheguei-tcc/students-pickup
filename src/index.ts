@@ -1,6 +1,10 @@
 import Pino from 'pino';
 import { Config, configFromEnv } from './infrastructure/config';
 import { newServer } from './infrastructure/server';
+import { Consumer } from 'sqs-consumer';
+import { newSocketIOAdapter } from './infrastructure/socket/io';
+import { newPositionConsumerService } from './application/services/position-consumer';
+import { PositionMessage } from './domain/position';
 
 const initDependencies = async (config: Config) => {
   const logger = Pino({
@@ -13,7 +17,20 @@ const initDependencies = async (config: Config) => {
     }
   });
 
-  const { httpServer } = newServer(logger);
+  const { httpServer, io } = newServer(logger);
+
+  const socketIOAdapter = newSocketIOAdapter(io);
+
+  const positionConsumerService = newPositionConsumerService(socketIOAdapter);
+
+  const positionMessageConsumer = Consumer.create({
+    queueUrl: config.queue,
+    handleMessage: async (message) =>
+      positionConsumerService.handle(
+        JSON.parse(message.Body) as PositionMessage
+      )
+  });
+  positionMessageConsumer.start();
 
   try {
     httpServer.listen(config.port, () =>

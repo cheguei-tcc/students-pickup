@@ -11,9 +11,9 @@ services:
       restart_policy: 
         condition: on-failure
     environment:
-      QUEUE: ${QUEUE}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      - QUEUE
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
     networks:
       - public
 networks:

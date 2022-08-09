@@ -21,7 +21,10 @@ const initDependencies = async (config: Config) => {
 
   const socketIOAdapter = newSocketIOAdapter(io);
 
-  const positionConsumerService = newPositionConsumerService(socketIOAdapter);
+  const positionConsumerService = newPositionConsumerService(
+    socketIOAdapter,
+    logger
+  );
 
   logger.info(`connecting consumer on queueUrl => ${config.queueUrl}`);
 

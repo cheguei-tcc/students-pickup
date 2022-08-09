@@ -1,4 +1,5 @@
 import { PositionMessage } from '../../domain/position';
+import { Logger } from '../interfaces/logger';
 import { Socket } from '../interfaces/socket';
 
 interface PositionConsumerService {
@@ -7,8 +8,11 @@ interface PositionConsumerService {
 
 const handle = async (
   message: PositionMessage,
-  socket: Socket
+  socket: Socket,
+  logger: Logger
 ): Promise<void> => {
+  logger.info(`consuming message: ${JSON.stringify(message)}`);
+
   const { responsible, school, status } = message;
 
   await socket.emit('student-arrived', {
@@ -18,9 +22,10 @@ const handle = async (
 };
 
 const newPositionConsumerService = (
-  socket: Socket
+  socket: Socket,
+  logger: Logger
 ): PositionConsumerService => ({
-  handle: async (message: PositionMessage) => handle(message, socket)
+  handle: async (message: PositionMessage) => handle(message, socket, logger)
 });
 
 export { newPositionConsumerService, PositionConsumerService };

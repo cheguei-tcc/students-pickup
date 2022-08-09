@@ -1,4 +1,4 @@
-version: '3'
+version: '3.3'
 
 services: 
   students-pickup:
@@ -19,5 +19,5 @@ services:
       - public
 networks:
   public:
-    external:
-      name: public
+    driver: overlay
+    external: true

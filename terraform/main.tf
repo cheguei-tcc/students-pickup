@@ -20,3 +20,14 @@ resource "aws_sqs_queue" "students_pickup_queue" {
     owner = "students-pickup-app"
   }
 }
+
+resource "aws_sqs_queue" "update_responsible_queue" {
+  name                      = "update-responsible-queue"
+  delay_seconds             = 0
+  receive_wait_time_seconds = 5
+  visibility_timeout_seconds = 180
+
+  tags = {
+    owner = "students-pickup-app"
+  }
+}

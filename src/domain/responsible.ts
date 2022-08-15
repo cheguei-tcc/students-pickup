@@ -1,9 +1,11 @@
 import { School } from './school';
+import { Student } from './student';
 
 type Responsible = {
-  name: string;
+  name?: string;
   CPF: string;
-  school: School;
+  school?: School;
+  students?: Student[];
 };
 
 export { Responsible };

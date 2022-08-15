@@ -1,10 +1,16 @@
 import Pino from 'pino';
 import { Config, configFromEnv } from './infrastructure/config';
 import { newServer } from './infrastructure/server';
-import { Consumer } from 'sqs-consumer';
 import { newSocketIOAdapter } from './infrastructure/socket/io';
 import { newPositionConsumerService } from './application/services/position-consumer';
-import { PositionMessage } from './domain/position';
+import {
+  createRedisClient,
+  newRedisRankingRepository,
+  newRedisResponsibleRepository
+} from './infrastructure/repository/redis';
+import { createPositionSQSConsumer, createResponsibleSQSConsumer } from './infrastructure/queue/sqs';
+import { newResponsibleConsumerService } from './application/services/responsible-consumer';
+import { newRankingService } from './application/services/ranking';
 
 const initDependencies = async (config: Config) => {
   const logger = Pino({
@@ -17,32 +23,37 @@ const initDependencies = async (config: Config) => {
     }
   });
 
-  const { httpServer, io } = newServer(logger);
+  const redisClient = await createRedisClient(config);
+  const redisRankingRepository = newRedisRankingRepository(redisClient, config);
+  const redisResponsibleRepository = newRedisResponsibleRepository(redisClient);
+
+  const rankingService = newRankingService(redisRankingRepository, redisResponsibleRepository);
+  const responsibleConsumerService = newResponsibleConsumerService(logger, redisResponsibleRepository);
+
+  // ranking service is on server construct to emit ranking to new monitors connected to socket
+  const { httpServer, io } = newServer(logger, rankingService);
 
   const socketIOAdapter = newSocketIOAdapter(io);
 
   const positionConsumerService = newPositionConsumerService(
     socketIOAdapter,
-    logger
+    logger,
+    redisRankingRepository,
+    rankingService
   );
 
-  logger.info(`connecting consumer on queueUrl => ${config.queueUrl}`);
+  logger.info(`connecting position consumer on queueUrl => ${config.queueUrl}`);
+  logger.info(`connecting responsible data consumer on queueUrl => ${config.responsibleDataQueueUrl}`);
 
-  const positionMessageConsumer = Consumer.create({
-    region: config.awsRegion,
-    queueUrl: config.queueUrl,
-    handleMessage: async (message) =>
-      positionConsumerService.handle(
-        JSON.parse(message.Body) as PositionMessage
-      )
-  });
-  positionMessageConsumer.start();
+  const positionConsumer = await createPositionSQSConsumer(config, positionConsumerService);
+  const responsibleConsumer = await createResponsibleSQSConsumer(config, responsibleConsumerService);
+
+  positionConsumer.start();
+  responsibleConsumer.start();
 
   try {
-    httpServer.listen(config.port, () =>
-      logger.info(`listening on port: ${config.port}`)
-    );
-  } catch (err) {
+    httpServer.listen(config.port, () => logger.info(`listening on port: ${config.port}`));
+  } catch (err: any) {
     logger.error(`server error: ${err.message}\n${err.stack}`);
   }
 };

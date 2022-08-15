@@ -1,13 +1,14 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { Logger } from 'pino';
+import { RankingService } from '../../application/services/ranking';
 
-const healthcheck = async (_request, response) => {
+const healthcheck = async (_request: any, response: any) => {
   // default is a "healthcheck" route
   return response.end(JSON.stringify({ health: 'ok' }));
 };
 
-export const newServer = (logger: Logger) => {
+export const newServer = (logger: Logger, rankingService: RankingService) => {
   const httpServer = createServer(healthcheck);
 
   const io = new Server(httpServer, {
@@ -15,19 +16,18 @@ export const newServer = (logger: Logger) => {
   });
 
   io.on('connection', async (socket) => {
-    logger.info(
-      `connectig ${socket.id} on room: ${socket.request.headers['user-surrogate-key']}`
-    );
+    logger.info(`connectig ${socket.id} on room: ${socket.request.headers['user-surrogate-key']}`);
 
     // move every socket connected to it respectivelly room which now is the school id for now
     const room = socket.request.headers['user-surrogate-key'];
-    await socket.join(room);
+    await socket.join(room!);
+    const ranking = await rankingService.getRanking(room as string);
+    // if there is some ranking ensure every new connection will receive it
+    socket.emit('responsible-arrived', { ranking });
 
     socket.on('disconnecting', (reason) => {
       logger.info(
-        `disconnecting socket: ${
-          socket.id
-        }, reason: ${reason}, from rooms: ${JSON.stringify([...socket.rooms])}`
+        `disconnecting socket: ${socket.id}, reason: ${reason}, from rooms: ${JSON.stringify([...socket.rooms])}`
       );
     });
 

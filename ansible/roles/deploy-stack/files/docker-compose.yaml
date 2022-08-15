@@ -12,12 +12,33 @@ services:
         condition: on-failure
     environment:
       - STUDENTS_PICKUP_QUEUE_URL
+      - UPDATE_RESPONSIBLE_QUEUE_URL
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_DEFAULT_REGION
+      - REDIS_URI=redis://redis
     networks:
       - public
+  redis:
+    image: redis:7
+    volumes:
+      - redis-data:/data
+    command: redis-server --maxmemory-policy allkeys-lru
+    ports:
+      - "6379"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy: 
+        condition: on-failure
+    networks:
+      - public
+
 networks:
-  public:
+    public:
     driver: overlay
     external: true
+
+volumes:
+  redis-data:
+    driver: local

@@ -1,5 +1,5 @@
-import { Responsible } from './responsible';
-import { School } from './school';
+import { Responsible } from '../../domain/responsible';
+import { School } from '../../domain/school';
 
 enum Status {
   ARRIVED = 'ARRIVED',
@@ -11,6 +11,8 @@ type PositionMessage = {
   school: School;
   responsible: Responsible;
   status: Status;
+  estimatedTime: number;
+  distanceMeters: number;
 };
 
 export { PositionMessage };

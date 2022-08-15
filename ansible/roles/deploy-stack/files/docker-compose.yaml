@@ -35,7 +35,7 @@ services:
       - public
 
 networks:
-    public:
+  public:
     driver: overlay
     external: true
 

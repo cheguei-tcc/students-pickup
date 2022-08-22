@@ -27,10 +27,11 @@ const updateRankingAndEmit = async (
   await rankingRepository.updateLastRankingCriteriaByResponsible(responsible, rankingCriteria);
   const ranking = await rankingService.getRanking(rankingKey);
 
-  await socket.emit('responsible-arrived', {
+  socket.emit('responsible-arrived', {
     msg: { ranking },
     group: school.CNPJ
   });
+
   logger.info(`sent responsible-arrived event to monitors, ranking => school: ${rankingKey} lenght: ${ranking.length}`);
 };
 

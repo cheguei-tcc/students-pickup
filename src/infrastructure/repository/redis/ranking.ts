@@ -19,8 +19,9 @@ const updateRanking = async (
 
   const { name, CPF } = responsible;
   const responsibleKey = `${name}::${CPF}`;
+  const redisKey = `ranking::${key}`;
 
-  redis.zAdd(`ranking::${key}`, { value: responsibleKey, score });
+  redis.zAdd(redisKey, { score, value: responsibleKey });
 };
 
 // key format => name::CPF

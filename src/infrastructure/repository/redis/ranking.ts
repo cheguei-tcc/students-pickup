@@ -27,13 +27,17 @@ const updateRanking = async (
 // key format => name::CPF
 const getResponsibleCPFFromKey = (key: string) => key.split('::')[1];
 
+// key format => name::CPF
+const getResponsibleNameFromKey = (key: string) => key.split('::')[0];
+
 const getRanking = async (redis: RedisClient, key: string): Promise<ResponsibleRanking[]> => {
   // ranking is a array of strings in responsibleKey format => name::CPF
   // the order is important, the first position is the first children to be delivery
   const ranking = await redis.zRange(`ranking::${key}`, 0, -1);
   return ranking.map((key, rank) => ({
     responsible: {
-      CPF: getResponsibleCPFFromKey(key)
+      CPF: getResponsibleCPFFromKey(key),
+      name: getResponsibleNameFromKey(key)
     },
     rank: {
       value: rank

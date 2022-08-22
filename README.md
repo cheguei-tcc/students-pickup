@@ -9,3 +9,5 @@
 ### Run Redis Locally with docker
 
 - `docker run --name students-pickup-redis -p 6379:6379 -d redis:7 redis-server --maxmemory-policy allkeys-lru`
+
+- `ZRANGE ranking::27.887.140/0001-80 0 -1`

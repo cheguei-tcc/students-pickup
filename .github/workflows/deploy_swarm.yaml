@@ -67,6 +67,7 @@ jobs:
     - name: deploy to stack with run ansible playbook
       env:
         STUDENTS_PICKUP_QUEUE_URL: ${{ secrets.STUDENTS_PICKUP_QUEUE_URL }}
+        UPDATE_RESPONSIBLE_QUEUE_URL: ${{ secrets.UPDATE_RESPONSIBLE_QUEUE_URL }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: sa-east-1

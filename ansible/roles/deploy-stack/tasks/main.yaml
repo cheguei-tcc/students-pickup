@@ -3,9 +3,13 @@
     src: "docker-compose.yaml"
     dest: "/opt/docker-compose.yaml"
 
-- name: debug
+- name: debug students pick queue
   debug:
-    msg: "{{ lookup('env', 'STUDENTS_PICKUP_QUEUE_URL')}}"
+    msg: "Provisioning based on STUDENTS_PICKUP_QUEUE_URL which is: {{ lookup('ansible.builtin.env', 'STUDENTS_PICKUP_QUEUE_URL') }}"
+
+- name: debug responsible data queue
+  debug:
+    msg: "Provisioning based on UPDATE_RESPONSIBLE_QUEUE_URL which is: {{ lookup('ansible.builtin.env', 'UPDATE_RESPONSIBLE_QUEUE_URL') }}"
 
 - name: Deploy stack from a compose file
   docker_stack:

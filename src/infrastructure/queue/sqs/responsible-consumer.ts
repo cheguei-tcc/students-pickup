@@ -7,7 +7,8 @@ const createResponsibleSQSConsumer = async (config: Config, handler: Responsible
   Consumer.create({
     region: config.awsRegion,
     queueUrl: config.responsibleDataQueueUrl,
-    handleMessage: async (message) => handler.updateResponsibleData(JSON.parse(message.Body!) as ResponsibleMessage)
+    handleMessage: async (message) =>
+      await handler.updateResponsibleData(JSON.parse(message.Body!) as ResponsibleMessage)
   });
 
 export { createResponsibleSQSConsumer };

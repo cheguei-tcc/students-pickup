@@ -23,7 +23,7 @@ const initDependencies = async (config: Config) => {
     }
   });
 
-  const redisClient = await createRedisClient(config);
+  const redisClient = await createRedisClient(config, logger);
   const redisRankingRepository = newRedisRankingRepository(redisClient, config);
   const redisResponsibleRepository = newRedisResponsibleRepository(redisClient);
 

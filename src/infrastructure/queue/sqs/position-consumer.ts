@@ -7,7 +7,7 @@ const createPositionSQSConsumer = async (config: Config, handler: PositionConsum
   Consumer.create({
     region: config.awsRegion,
     queueUrl: config.queueUrl,
-    handleMessage: async (message) => handler.updateRankingAndEmit(JSON.parse(message.Body!) as PositionMessage)
+    handleMessage: async (message) => await handler.updateRankingAndEmit(JSON.parse(message.Body!) as PositionMessage)
   });
 
 export { createPositionSQSConsumer };

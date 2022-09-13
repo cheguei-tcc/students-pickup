@@ -1,10 +1,25 @@
-import { ResponsibleRanking } from '../dtos/ranking';
+import { Responsible } from '../../domain/responsible';
+import { RankingCriteria, ResponsibleRanking } from '../dtos/ranking';
 import { RankingRepository } from '../interfaces/ranking';
 import { ResponsibleRepository } from '../interfaces/responsible';
 
 interface RankingService {
   getRanking: (key: string) => Promise<ResponsibleRanking[]>;
+  updateRanking: (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) => Promise<void>;
 }
+
+const updateRanking = async (
+  rankingRepository: RankingRepository,
+  key: string,
+  responsible: Responsible,
+  rankingCriteria: RankingCriteria
+) => {
+  await Promise.all([
+    rankingRepository.updateRanking(key, responsible, rankingCriteria),
+    // we also need to save the last rankingCriteria used by each responsible to populate the dynamic list
+    rankingRepository.updateLastRankingCriteriaByResponsible(responsible, rankingCriteria)
+  ]);
+};
 
 const getRanking = async (
   rankingRepository: RankingRepository,
@@ -31,7 +46,9 @@ const newRankingService = (
   rankingRepository: RankingRepository,
   responsibleRepository: ResponsibleRepository
 ): RankingService => ({
-  getRanking: async (key: string) => getRanking(rankingRepository, responsibleRepository, key)
+  getRanking: async (key: string) => getRanking(rankingRepository, responsibleRepository, key),
+  updateRanking: async (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) =>
+    updateRanking(rankingRepository, key, responsible, rankingCriteria)
 });
 
 export { newRankingService, RankingService };

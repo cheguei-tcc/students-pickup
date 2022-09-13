@@ -9,6 +9,7 @@ import {
   newRedisResponsibleRepository
 } from './infrastructure/repository/redis';
 import { createPositionSQSConsumer, createResponsibleSQSConsumer } from './infrastructure/queue/sqs';
+import { createRankingCleanerQueue, runRankingCleanerWorker } from './infrastructure/queue/bullmq/clean-ranking';
 import { newResponsibleConsumerService } from './application/services/responsible-consumer';
 import { newRankingService } from './application/services/ranking';
 
@@ -35,12 +36,7 @@ const initDependencies = async (config: Config) => {
 
   const socketIOAdapter = newSocketIOAdapter(io);
 
-  const positionConsumerService = newPositionConsumerService(
-    socketIOAdapter,
-    logger,
-    redisRankingRepository,
-    rankingService
-  );
+  const positionConsumerService = newPositionConsumerService(socketIOAdapter, logger, rankingService);
 
   logger.info(`connecting position consumer on queueUrl => ${config.queueUrl}`);
   logger.info(`connecting responsible data consumer on queueUrl => ${config.responsibleDataQueueUrl}`);
@@ -50,6 +46,11 @@ const initDependencies = async (config: Config) => {
 
   positionConsumer.start();
   responsibleConsumer.start();
+
+  logger.info('starting ranking cleaner queue and worker');
+
+  await createRankingCleanerQueue();
+  await runRankingCleanerWorker(redisRankingRepository, logger);
 
   try {
     httpServer.listen(config.port, () => logger.info(`listening on port: ${config.port}`));

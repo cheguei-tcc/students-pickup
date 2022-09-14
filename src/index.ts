@@ -49,8 +49,8 @@ const initDependencies = async (config: Config) => {
 
   logger.info('starting ranking cleaner queue and worker');
 
-  await createRankingCleanerQueue();
-  await runRankingCleanerWorker(redisRankingRepository, logger);
+  await createRankingCleanerQueue(config);
+  await runRankingCleanerWorker(redisRankingRepository, logger, config);
 
   try {
     httpServer.listen(config.port, () => logger.info(`listening on port: ${config.port}`));

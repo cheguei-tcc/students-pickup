@@ -3,6 +3,7 @@ type Config = {
   logLevel: string;
   port: string;
   redisUri: string;
+  redisHost: string;
   queueUrl: string;
   responsibleDataQueueUrl: string;
   awsRegion: string;
@@ -19,7 +20,8 @@ const configFromEnv = (): Config => ({
   responsibleDataQueueUrl: process.env.UPDATE_RESPONSIBLE_QUEUE_URL ?? 'sqs-local',
   awsRegion: process.env.AWS_DEFAULT_REGION ?? 'sa-east-1',
   distanceRankingWeight: Number(process.env.DISTANCE_RANKING_WEIGHT) || 0.9,
-  estimatedTimeRankingWeight: Number(process.env.ESTIMATED_TIME_RANKING_WEIGHT) || 0.1
+  estimatedTimeRankingWeight: Number(process.env.ESTIMATED_TIME_RANKING_WEIGHT) || 0.1,
+  redisHost: process.env.REDIS_HOST || 'localhost'
 });
 
 export { Config, configFromEnv };

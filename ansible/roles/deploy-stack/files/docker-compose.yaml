@@ -20,6 +20,7 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_DEFAULT_REGION
       - REDIS_URI=redis://redis
+      - REDIS_HOST=redis
     networks:
       - public
   redis:

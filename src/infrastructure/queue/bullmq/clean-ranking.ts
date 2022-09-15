@@ -5,9 +5,28 @@ import { Config } from '../../config';
 
 const QUEUE_NAME = 'CLEAN_RANKING_QUEUE';
 
-export const createRankingCleanerQueue = async ({ redisHost }: Config, logger: Logger) => {
+// this process repeats 12:15 UTC and 18:15 UTC every day to clean every sorted set key on redis
+export const runRankingCleanerScheduledProcess = async (
+  { redisHost }: Config,
+  logger: Logger,
+  rankingRepository: RankingRepository
+) => {
+  // creates the queue instance
   const cleanRankingQueue = new Queue(QUEUE_NAME, { connection: { host: redisHost, port: 6379 } });
+  // crates the scheduler that handle delayed/repeateble jobs
   const queueScheduler = new QueueScheduler(QUEUE_NAME, { connection: { host: redisHost, port: 6379 } });
+
+  // starts a worker to process jobs from queue
+  const worker = new Worker(
+    QUEUE_NAME,
+    async (job: Job) => {
+      logger.info(`processing job: ${job.name} on ranking cleaner worker`);
+      await rankingRepository.cleanRankings();
+    },
+    { connection: { host: redisHost, port: 6379 } }
+  );
+
+  worker.on('completed', ({ id }) => logger.info(`job: ${id} for ranking cleaning complete`));
 
   queueScheduler.on('stalled', (jobId, prev) =>
     logger.info(`stalled job event from scheduler, jobId=> ${jobId} prev=> ${prev}`)
@@ -29,21 +48,4 @@ export const createRankingCleanerQueue = async ({ redisHost }: Config, logger: L
       }
     );
   }
-};
-
-export const runRankingCleanerWorker = async (
-  rankingRepository: RankingRepository,
-  logger: Logger,
-  { redisHost }: Config
-) => {
-  const worker = new Worker(
-    QUEUE_NAME,
-    async (job: Job) => {
-      logger.info(`processing job: ${job.name} on ranking cleaner worker`);
-      await rankingRepository.cleanRankings();
-    },
-    { connection: { host: redisHost, port: 6379 } }
-  );
-
-  worker.on('completed', ({ id }) => logger.info(`job: ${id} for ranking cleaning complete`));
 };

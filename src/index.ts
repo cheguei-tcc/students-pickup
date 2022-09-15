@@ -49,7 +49,7 @@ const initDependencies = async (config: Config) => {
 
   logger.info('starting ranking cleaner queue and worker');
 
-  await createRankingCleanerQueue(config);
+  await createRankingCleanerQueue(config, logger);
   await runRankingCleanerWorker(redisRankingRepository, logger, config);
 
   try {

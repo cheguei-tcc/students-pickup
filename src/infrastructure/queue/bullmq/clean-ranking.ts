@@ -33,7 +33,7 @@ export const runRankingCleanerScheduledProcess = async (
   );
   queueScheduler.on('error', (err) => logger.error(`error on queue scheduler, err=> ${JSON.stringify(err)}`));
 
-  const crons = ['* 15 12 * * *', '* 15 18 * * *'];
+  const crons = ['30 15 12 * * *', '30 15 18 * * *'];
 
   for (const cron of crons) {
     await cleanRankingQueue.add(

@@ -15,6 +15,7 @@ resource "aws_sqs_queue" "students_pickup_queue_fifo" {
   delay_seconds             = 0
   receive_wait_time_seconds = 5
   visibility_timeout_seconds = 180
+  message_retention_seconds = 10800 # 3 hours
   
   fifo_queue                  = true
   content_based_deduplication = true

@@ -15,7 +15,13 @@ const updateRanking = async (
 ) => {
   const { distanceMeters, estimatedTime } = rankingCriteria;
   const { distanceRankingWeight, estimatedTimeRankingWeight } = config;
-  const score = distanceMeters * distanceRankingWeight + estimatedTime * estimatedTimeRankingWeight;
+
+  let score = estimatedTime;
+
+  // if weighted score is set we use the weighted calculation to set score
+  if (config.weightedScore) {
+    score = distanceMeters * distanceRankingWeight + estimatedTime * estimatedTimeRankingWeight;
+  }
 
   const { name, CPF } = responsible;
   const responsibleKey = `${name}::${CPF}`;

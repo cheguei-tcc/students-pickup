@@ -23,27 +23,23 @@ const updateRanking = async (
     score = distanceMeters * distanceRankingWeight + estimatedTime * estimatedTimeRankingWeight;
   }
 
-  const { name, CPF } = responsible;
-  const responsibleKey = `${name}::${CPF}`;
-  const redisKey = `ranking::${key}`;
+  const { id } = responsible;
+  const responsibleKey = `responsible::${id}`;
+  const redisKey = `ranking::school::${key}`;
 
   redis.zAdd(redisKey, { score, value: responsibleKey });
 };
 
-// key format => name::CPF
-const getResponsibleCPFFromKey = (key: string) => key.split('::')[1];
-
-// key format => name::CPF
-const getResponsibleNameFromKey = (key: string) => key.split('::')[0];
+// key format => responsible::ID
+const getResponsibleIDFromKey = (key: string) => key.split('::')[1];
 
 const getRanking = async (redis: RedisClient, key: string): Promise<ResponsibleRanking[]> => {
-  // ranking is a array of strings in responsibleKey format => name::CPF
+  // ranking is a array of strings in responsibleKey format => responsible::ID
   // the order is important, the first position is the first children to be delivery
-  const ranking = await redis.zRange(`ranking::${key}`, 0, -1);
+  const ranking = await redis.zRange(`ranking::school::${key}`, 0, -1);
   return ranking.map((key, rank) => ({
     responsible: {
-      CPF: getResponsibleCPFFromKey(key),
-      name: getResponsibleNameFromKey(key)
+      id: Number(getResponsibleIDFromKey(key))
     },
     rank: {
       value: rank
@@ -55,7 +51,7 @@ const lastRankingCriteriaByResponsible = async (
   redis: RedisClient,
   responsible: Responsible
 ): Promise<RankingCriteria> => {
-  const data = await redis.get(`ranking::criteria::${responsible.CPF}`);
+  const data = await redis.get(`ranking::criteria::responsible::${responsible.id}`);
   return JSON.parse(data!) as RankingCriteria;
 };
 
@@ -64,7 +60,7 @@ const updateLastRankingCriteriaByResponsible = async (
   responsible: Responsible,
   rankingCriteria: RankingCriteria
 ) => {
-  const key = `ranking::criteria::${responsible.CPF}`;
+  const key = `ranking::criteria::responsible::${responsible.id}`;
   const json = JSON.stringify(rankingCriteria);
   await redis.set(key, json);
 };

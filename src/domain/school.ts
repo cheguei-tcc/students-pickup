@@ -1,6 +1,7 @@
 type School = {
-  CNPJ: string;
-  name: string;
+  id: number;
+  CNPJ?: string;
+  name?: string;
 };
 
 export { School };

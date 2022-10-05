@@ -30,7 +30,7 @@ const getRanking = async (
 
   // we also need to fetch some data that isn't presence on ranking since it persist just the score of given responsible
   for (const responsibleRanked of ranking) {
-    const students = await responsibleRepository.getStudents(responsibleRanked.responsible.CPF);
+    const students = await responsibleRepository.getStudents(responsibleRanked.responsible.id);
     const { distanceMeters: lastDistance, estimatedTime: lastEstimatedTime } =
       await rankingRepository.lastRankingCriteriaByResponsible(responsibleRanked.responsible);
 

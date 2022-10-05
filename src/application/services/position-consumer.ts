@@ -16,20 +16,22 @@ const updateRankingAndEmit = async (
 ): Promise<void> => {
   logger.info(`consuming message: ${JSON.stringify(message)}`);
   const { responsible, school, distanceMeters, estimatedTime } = message;
-  logger.info(`update ranking for responsible: ${responsible.name} from school ${school.name}::${school.CNPJ}`);
+  logger.info(`update ranking for responsible => ${responsible.id} from school ${school.id}`);
 
-  const rankingKey = school.CNPJ;
+  const rankingKey = String(school.id);
   const rankingCriteria: RankingCriteria = { distanceMeters, estimatedTime };
 
   await rankingService.updateRanking(rankingKey, responsible, rankingCriteria);
   const ranking = await rankingService.getRanking(rankingKey);
 
-  socket.emit('responsible-arrived', {
+  socket.emit('responsible-ranking', {
     msg: { ranking },
     group: school.CNPJ
   });
 
-  logger.info(`sent responsible-arrived event to monitors, ranking => school: ${rankingKey} lenght: ${ranking.length}`);
+  logger.info(
+    `sent responsible-arrived event to monitors, ranking => schoolId: ${rankingKey} lenght: ${ranking.length}`
+  );
 };
 
 const newPositionConsumerService = (

@@ -39,3 +39,9 @@ resource "aws_sqs_queue" "update_responsible_queue" {
     owner = "students-pickup-app"
   }
 }
+
+resource "aws_sns_topic_subscription" "responsible_updates_sqs_target" {
+  topic_arn = var.sns_update_responsible_topic_arn
+  protocol  = "sqs"
+  endpoint  = aws_sqs_queue.update_responsible_queue.arn
+}

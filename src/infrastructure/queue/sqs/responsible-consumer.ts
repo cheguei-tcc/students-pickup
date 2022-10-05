@@ -7,8 +7,13 @@ const createResponsibleSQSConsumer = async (config: Config, handler: Responsible
   Consumer.create({
     region: config.awsRegion,
     queueUrl: config.responsibleDataQueueUrl,
-    handleMessage: async (message) =>
-      await handler.updateResponsibleData(JSON.parse(message.Body!) as ResponsibleMessage)
+    handleMessage: async (message) => {
+      const parsedMsg = JSON.parse(message.Body!);
+
+      parsedMsg.Type === 'Notification' // if message came from an SNS event
+        ? await handler.updateResponsibleData(JSON.parse(parsedMsg.Message) as ResponsibleMessage)
+        : await handler.updateResponsibleData(parsedMsg as ResponsibleMessage);
+    }
   });
 
 export { createResponsibleSQSConsumer };

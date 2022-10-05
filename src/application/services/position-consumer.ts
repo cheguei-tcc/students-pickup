@@ -16,6 +16,12 @@ const updateRankingAndEmit = async (
 ): Promise<void> => {
   logger.info(`consuming message: ${JSON.stringify(message)}`);
   const { responsible, school, distanceMeters, estimatedTime } = message;
+
+  if (!responsible?.id || !school?.id) {
+    logger.info(`[DO NOTHING] missing responsibleId or schoolId on position message => ${JSON.stringify(message)}`);
+    return;
+  }
+
   logger.info(`update ranking for responsible => ${responsible.id} from school ${school.id}`);
 
   const rankingKey = String(school.id);
@@ -26,7 +32,7 @@ const updateRankingAndEmit = async (
 
   socket.emit('responsible-ranking', {
     msg: { ranking },
-    group: school.CNPJ
+    group: school.id
   });
 
   logger.info(

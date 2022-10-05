@@ -45,3 +45,27 @@ resource "aws_sns_topic_subscription" "responsible_updates_sqs_target" {
   protocol  = "sqs"
   endpoint  = aws_sqs_queue.update_responsible_queue.arn
 }
+
+resource aws_sqs_queue_policy "allow_publish_from_sns" {
+  queue_url = aws_sqs_queue.update_responsible_queue.id
+  policy = <<POLICY
+  {
+    "Version": "2012-10-17",
+    "Id": "allow_sns_publish",
+    "Statement": [{
+      "Sid": "1",
+      "Effect":"Allow",
+      "Principal": {
+        "Service": "sns.amazonaws.com"
+      },
+      "Action":"sqs:SendMessage",
+      "Resource":"${aws_sqs_queue.update_responsible_queue.arn}",
+      "Condition":{
+        "ArnEquals":{
+          "aws:SourceArn":"${var.sns_update_responsible_topic_arn}"
+        }
+      }
+    }]
+  }
+  POLICY
+}

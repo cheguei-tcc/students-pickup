@@ -12,6 +12,12 @@ const updateResponsibleData = async (
   message: ResponsibleMessage
 ) => {
   logger.info(`upsert responsible data => ${JSON.stringify(message)}`);
+
+  if (!message.responsible?.id) {
+    logger.info(`[DO NOTHING] upsert responsible data without responsibleId => ${JSON.stringify(message)}`);
+    return;
+  }
+
   return responsibleRepository.upsert(message.responsible);
 };
 

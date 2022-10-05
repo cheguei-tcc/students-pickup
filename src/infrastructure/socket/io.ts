@@ -14,7 +14,7 @@ const emit = async (io: SocketIO, event: string, data: any): Promise<void> => {
 
   const room = io.in(group);
 
-  room.emit(event, { ...msg });
+  room.emit(event, msg);
 };
 
 const newSocketIOAdapter = (io: SocketIO): Socket => ({

@@ -24,7 +24,7 @@ export const newServer = (logger: Logger, rankingService: RankingService) => {
     await socket.join(room!);
     const ranking = await rankingService.getRanking(room as string);
     // if there is some ranking ensure every new connection will receive it
-    socket.emit('responsible-arrived', { ranking });
+    socket.emit('responsible-ranking', JSON.stringify({ ranking }));
 
     socket.on('disconnecting', (reason) => {
       logger.info(

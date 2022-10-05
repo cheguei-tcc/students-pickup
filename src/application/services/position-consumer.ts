@@ -32,7 +32,7 @@ const updateRankingAndEmit = async (
 
   socket.emit('responsible-ranking', {
     msg: JSON.stringify({ ranking }),
-    group: school.id
+    group: String(school.id)
   });
 
   logger.info(

@@ -31,7 +31,7 @@ const updateRankingAndEmit = async (
   const ranking = await rankingService.getRanking(rankingKey);
 
   socket.emit('responsible-ranking', {
-    msg: { ranking },
+    msg: JSON.stringify({ ranking }),
     group: school.id
   });
 

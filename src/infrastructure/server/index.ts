@@ -32,8 +32,8 @@ export const newServer = (logger: Logger, rankingService: RankingService, studen
     socket.emit('dismissed-students', JSON.stringify({ students: studentsDismissed }));
 
     socket.on('dismissed-students', async (message) => {
-      logger.info(`[dismissed-students] parsing => ${message}`);
-      const { responsibleId } = JSON.parse(message);
+      logger.info(`[dismissed-students] msg => ${JSON.stringify(message)}`);
+      const { responsibleId } = message;
       const socketIOAdapter = newSocketIOAdapter(io);
       await rankingService.dismissedStudentFromRanking(room as string, Number(responsibleId), socketIOAdapter);
       logger.info('[dismissed-students] executed');

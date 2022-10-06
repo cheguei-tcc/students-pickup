@@ -1,4 +1,4 @@
-import { PositionMessage } from '../dtos/position';
+import { PositionMessage, Status } from '../dtos/position';
 import { RankingCriteria } from '../dtos/ranking';
 import { Logger } from '../interfaces/logger';
 import { Socket } from '../interfaces/socket';
@@ -15,10 +15,24 @@ const updateRankingAndEmit = async (
   logger: Logger
 ): Promise<void> => {
   logger.info(`consuming message: ${JSON.stringify(message)}`);
-  const { responsible, school, distanceMeters, estimatedTime } = message;
+  const { responsible, school, distanceMeters, estimatedTime, status } = message;
 
   if (!responsible?.id || !school?.id) {
     logger.info(`[DO NOTHING] missing responsibleId or schoolId on position message => ${JSON.stringify(message)}`);
+    return;
+  }
+
+  if (status && status === Status.CANCELED) {
+    await rankingService.removeResponsible(String(school.id), responsible.id);
+    logger.info(`[CANCELED] remove responsible => ${responsible.id} from rank => ${school.id}`);
+
+    const ranking = await rankingService.getRanking(String(school.id));
+
+    socket.emit('responsible-ranking', {
+      msg: JSON.stringify({ ranking }),
+      group: String(school.id)
+    });
+
     return;
   }
 

@@ -15,4 +15,4 @@ type PositionMessage = {
   distanceMeters: number;
 };
 
-export { PositionMessage };
+export { PositionMessage, Status };

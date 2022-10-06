@@ -9,6 +9,7 @@ interface RankingService {
   getRanking: (key: string) => Promise<ResponsibleRanking[]>;
   updateRanking: (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) => Promise<void>;
   dismissedStudentFromRanking: (key: string, responsibleId: number, socket: Socket) => Promise<void>;
+  removeResponsible: (key: string, reponsibleId: number) => Promise<void>;
 }
 
 const dismissedStudentFromRanking = async (
@@ -79,7 +80,16 @@ const newRankingService = (
   updateRanking: async (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) =>
     updateRanking(rankingRepository, key, responsible, rankingCriteria),
   dismissedStudentFromRanking: async (key: string, responsibleId: number, socket: Socket) =>
-    dismissedStudentFromRanking(studentRepository, rankingRepository, responsibleRepository, socket, key, responsibleId)
+    dismissedStudentFromRanking(
+      studentRepository,
+      rankingRepository,
+      responsibleRepository,
+      socket,
+      key,
+      responsibleId
+    ),
+  removeResponsible: async (key: string, responsibleId: number) =>
+    rankingRepository.removeResponsible(key, responsibleId)
 });
 
 export { newRankingService, RankingService };

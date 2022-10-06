@@ -21,7 +21,7 @@ const dismissedStudentFromRanking = async (
   responsibleId: number
 ) => {
   await rankingRepository.removeResponsible(key, responsibleId);
-  const ranking = await rankingRepository.getRanking(key);
+  const ranking = await getRanking(rankingRepository, responsibleRepository, key);
 
   socket.emit('responsible-ranking', {
     msg: JSON.stringify({ ranking }),

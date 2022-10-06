@@ -6,6 +6,13 @@ import { Config } from '../../config';
 
 type RedisClient = ReturnType<typeof createClient>;
 
+const removeResponsible = async (redis: RedisClient, key: string, responsibleId: number) => {
+  const redisKey = `ranking::school::${key}`;
+  const responsibleKey = `responsible::${responsibleId}`;
+
+  await redis.zRem(redisKey, responsibleKey);
+};
+
 const updateRanking = async (
   redis: RedisClient,
   config: Config,
@@ -82,7 +89,8 @@ const newRedisRankingRepository = (redis: RedisClient, config: Config): RankingR
     lastRankingCriteriaByResponsible(redis, responsible),
   updateLastRankingCriteriaByResponsible: async (responsible: Responsible, rankingCriteria: RankingCriteria) =>
     updateLastRankingCriteriaByResponsible(redis, responsible, rankingCriteria),
-  cleanRankings: async () => cleanRankings(redis)
+  cleanRankings: async () => cleanRankings(redis),
+  removeResponsible: async (key: string, responsibleId: number) => removeResponsible(redis, key, responsibleId)
 });
 
 export { newRedisRankingRepository };

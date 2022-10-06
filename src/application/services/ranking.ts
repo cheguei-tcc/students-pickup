@@ -2,11 +2,39 @@ import { Responsible } from '../../domain/responsible';
 import { RankingCriteria, ResponsibleRanking } from '../dtos/ranking';
 import { RankingRepository } from '../interfaces/ranking';
 import { ResponsibleRepository } from '../interfaces/responsible';
+import { Socket } from '../interfaces/socket';
+import { StudentRepository } from '../interfaces/student';
 
 interface RankingService {
   getRanking: (key: string) => Promise<ResponsibleRanking[]>;
   updateRanking: (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) => Promise<void>;
+  dismissedStudentFromRanking: (key: string, responsibleId: number, socket: Socket) => Promise<void>;
 }
+
+const dismissedStudentFromRanking = async (
+  studentRepository: StudentRepository,
+  rankingRepository: RankingRepository,
+  responsibleRepository: ResponsibleRepository,
+  socket: Socket,
+  key: string,
+  responsibleId: number
+) => {
+  await rankingRepository.removeResponsible(key, responsibleId);
+  const ranking = await rankingRepository.getRanking(key);
+
+  socket.emit('responsible-ranking', {
+    msg: JSON.stringify({ ranking }),
+    group: key
+  });
+
+  const students = await responsibleRepository.getStudents(responsibleId);
+  const dismissedStudents = await studentRepository.updateStudentsBySchool(students, Number(key));
+
+  socket.emit('dismissed-students', {
+    msg: JSON.stringify({ students: dismissedStudents }),
+    group: key
+  });
+};
 
 const updateRanking = async (
   rankingRepository: RankingRepository,
@@ -44,11 +72,14 @@ const getRanking = async (
 
 const newRankingService = (
   rankingRepository: RankingRepository,
-  responsibleRepository: ResponsibleRepository
+  responsibleRepository: ResponsibleRepository,
+  studentRepository: StudentRepository
 ): RankingService => ({
   getRanking: async (key: string) => getRanking(rankingRepository, responsibleRepository, key),
   updateRanking: async (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) =>
-    updateRanking(rankingRepository, key, responsible, rankingCriteria)
+    updateRanking(rankingRepository, key, responsible, rankingCriteria),
+  dismissedStudentFromRanking: async (key: string, responsibleId: number, socket: Socket) =>
+    dismissedStudentFromRanking(studentRepository, rankingRepository, responsibleRepository, socket, key, responsibleId)
 });
 
 export { newRankingService, RankingService };

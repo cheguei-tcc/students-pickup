@@ -12,6 +12,7 @@ import { createPositionSQSConsumer, createResponsibleSQSConsumer } from './infra
 import { runRankingCleanerScheduledProcess } from './infrastructure/queue/bullmq/clean-ranking';
 import { newResponsibleConsumerService } from './application/services/responsible-consumer';
 import { newRankingService } from './application/services/ranking';
+import { newRedisStudentRepository } from './infrastructure/repository/redis/student';
 
 const initDependencies = async (config: Config) => {
   const logger = Pino({
@@ -27,12 +28,13 @@ const initDependencies = async (config: Config) => {
   const redisClient = await createRedisClient(config, logger);
   const redisRankingRepository = newRedisRankingRepository(redisClient, config);
   const redisResponsibleRepository = newRedisResponsibleRepository(redisClient);
+  const redisStudentRepository = newRedisStudentRepository(redisClient);
 
-  const rankingService = newRankingService(redisRankingRepository, redisResponsibleRepository);
+  const rankingService = newRankingService(redisRankingRepository, redisResponsibleRepository, redisStudentRepository);
   const responsibleConsumerService = newResponsibleConsumerService(logger, redisResponsibleRepository);
 
   // ranking service is on server construct to emit ranking to new monitors connected to socket
-  const { httpServer, io } = newServer(logger, rankingService);
+  const { httpServer, io } = newServer(logger, rankingService, redisStudentRepository);
 
   const socketIOAdapter = newSocketIOAdapter(io);
 

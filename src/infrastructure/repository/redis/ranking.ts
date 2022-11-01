@@ -81,6 +81,14 @@ const cleanRankings = async (redis: RedisClient) => {
   }
 };
 
+const cleanDismissed = async (redis: RedisClient) => {
+  const keys = await redis.keys('dismissed::school::*');
+  // we must delete every dismissed key
+  for (const key of keys) {
+    await redis.del(key);
+  }
+};
+
 const newRedisRankingRepository = (redis: RedisClient, config: Config): RankingRepository => ({
   getRanking: async (key: string) => getRanking(redis, key),
   updateRanking: async (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) =>
@@ -90,6 +98,7 @@ const newRedisRankingRepository = (redis: RedisClient, config: Config): RankingR
   updateLastRankingCriteriaByResponsible: async (responsible: Responsible, rankingCriteria: RankingCriteria) =>
     updateLastRankingCriteriaByResponsible(redis, responsible, rankingCriteria),
   cleanRankings: async () => cleanRankings(redis),
+  cleanDismissed: async () => cleanDismissed(redis),
   removeResponsible: async (key: string, responsibleId: number) => removeResponsible(redis, key, responsibleId)
 });
 

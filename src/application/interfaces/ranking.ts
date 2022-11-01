@@ -7,6 +7,7 @@ interface RankingRepository {
   lastRankingCriteriaByResponsible: (responsible: Responsible) => Promise<RankingCriteria>;
   updateLastRankingCriteriaByResponsible: (responsible: Responsible, rankingCriteria: RankingCriteria) => Promise<void>;
   cleanRankings: () => Promise<void>;
+  cleanDismissed: () => Promise<void>;
   removeResponsible: (key: string, responsibleId: number) => Promise<void>;
 }
 

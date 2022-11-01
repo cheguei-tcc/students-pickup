@@ -22,6 +22,9 @@ export const runRankingCleanerScheduledProcess = async (
     async (job: Job) => {
       logger.info(`processing job: ${job.name} on ranking cleaner worker`);
       await rankingRepository.cleanRankings();
+      logger.info('clean ranking');
+      await rankingRepository.cleanDismissed();
+      logger.info('clean dismisseds');
     },
     { connection: { host: redisHost, port: 6379 } }
   );

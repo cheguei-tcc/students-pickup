@@ -10,4 +10,13 @@
 
 - `docker run --name students-pickup-redis -p 6379:6379 -d redis:7 redis-server --maxmemory-policy allkeys-lru`
 
-- `ZRANGE ranking::27.887.140/0001-80 0 -1`
+- `ZRANGE ranking::school::1 0 -1`
+
+### Install K6 from github
+
+- :warning: not compatible with Socket.io protocol
+- curl -L https://github.com/grafana/k6/releases/download/v0.39.0/k6-v0.39.0-linux-amd64.deb > k6.deb
+
+### Install Artillery
+
+- npm install -g artillery@latest

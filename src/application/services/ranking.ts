@@ -8,11 +8,17 @@ import { StudentRepository } from '../interfaces/student';
 interface RankingService {
   getRanking: (key: string) => Promise<ResponsibleRanking[]>;
   updateRanking: (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) => Promise<void>;
-  dismissedStudentFromRanking: (key: string, responsibleId: number, socket: Socket) => Promise<void>;
+  dismissedStudentFromRanking: (
+    key: string,
+    responsibleId: number,
+    studentsIds: number[],
+    socket: Socket
+  ) => Promise<void>;
+  dismissedResponsibleFromRanking: (key: string, responsibleId: number, socket: Socket) => Promise<void>;
   removeResponsible: (key: string, reponsibleId: number) => Promise<void>;
 }
 
-const dismissedStudentFromRanking = async (
+const dismissedResponsibleFromRanking = async (
   studentRepository: StudentRepository,
   rankingRepository: RankingRepository,
   responsibleRepository: ResponsibleRepository,
@@ -21,7 +27,7 @@ const dismissedStudentFromRanking = async (
   responsibleId: number
 ) => {
   await rankingRepository.removeResponsible(key, responsibleId);
-  const ranking = await getRanking(rankingRepository, responsibleRepository, key);
+  const ranking = await getRanking(rankingRepository, responsibleRepository, studentRepository, key);
 
   socket.emit('responsible-ranking', {
     msg: JSON.stringify({ ranking }),
@@ -30,6 +36,37 @@ const dismissedStudentFromRanking = async (
 
   const students = await responsibleRepository.getStudents(responsibleId);
   const dismissedStudents = await studentRepository.updateStudentsBySchool(students, Number(key));
+
+  socket.emit('dismissed-students', {
+    msg: JSON.stringify({ students: dismissedStudents }),
+    group: key
+  });
+};
+
+const dismissedStudentFromRanking = async (
+  studentRepository: StudentRepository,
+  rankingRepository: RankingRepository,
+  responsibleRepository: ResponsibleRepository,
+  socket: Socket,
+  key: string,
+  responsibleId: number,
+  studentsIds: number[]
+) => {
+  const students = await responsibleRepository.getStudents(responsibleId);
+
+  const dismissedStudents = await studentRepository.updateStudentsBySchool(
+    students.filter((s) => studentsIds.filter((id) => id === s.id).length > 0),
+    Number(key)
+  );
+
+  if (students.length === studentsIds.length) await rankingRepository.removeResponsible(key, responsibleId);
+
+  const ranking = await getRanking(rankingRepository, responsibleRepository, studentRepository, key);
+
+  socket.emit('responsible-ranking', {
+    msg: JSON.stringify({ ranking }),
+    group: key
+  });
 
   socket.emit('dismissed-students', {
     msg: JSON.stringify({ students: dismissedStudents }),
@@ -53,6 +90,7 @@ const updateRanking = async (
 const getRanking = async (
   rankingRepository: RankingRepository,
   responsibleRepository: ResponsibleRepository,
+  studentRepository: StudentRepository,
   key: string
 ): Promise<ResponsibleRanking[]> => {
   const ranking = await rankingRepository.getRanking(key);
@@ -63,7 +101,11 @@ const getRanking = async (
     const { distanceMeters: lastDistance, estimatedTime: lastEstimatedTime } =
       await rankingRepository.lastRankingCriteriaByResponsible(responsibleRanked.responsible);
 
-    responsibleRanked.responsible.students = students;
+    const dismissedStudents = await studentRepository.getStudentsBySchool(Number(key));
+
+    responsibleRanked.responsible.students = students.filter(
+      (s) => dismissedStudents.filter((ds) => ds.id === s.id).length === 0
+    );
     responsibleRanked.rank.distanceMeters = lastDistance;
     responsibleRanked.rank.estimatedTime = lastEstimatedTime;
   }
@@ -76,11 +118,21 @@ const newRankingService = (
   responsibleRepository: ResponsibleRepository,
   studentRepository: StudentRepository
 ): RankingService => ({
-  getRanking: async (key: string) => getRanking(rankingRepository, responsibleRepository, key),
+  getRanking: async (key: string) => getRanking(rankingRepository, responsibleRepository, studentRepository, key),
   updateRanking: async (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) =>
     updateRanking(rankingRepository, key, responsible, rankingCriteria),
-  dismissedStudentFromRanking: async (key: string, responsibleId: number, socket: Socket) =>
+  dismissedStudentFromRanking: async (key: string, responsibleId: number, studentsIds: number[], socket: Socket) =>
     dismissedStudentFromRanking(
+      studentRepository,
+      rankingRepository,
+      responsibleRepository,
+      socket,
+      key,
+      responsibleId,
+      studentsIds
+    ),
+  dismissedResponsibleFromRanking: async (key: string, responsibleId: number, socket: Socket) =>
+    dismissedResponsibleFromRanking(
       studentRepository,
       rankingRepository,
       responsibleRepository,

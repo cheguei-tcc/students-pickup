@@ -33,9 +33,18 @@ export const newServer = (logger: Logger, rankingService: RankingService, studen
 
     socket.on('dismissed-students', async (message) => {
       logger.info(`[dismissed-students] msg => ${JSON.stringify(message)}`);
-      const { responsibleId } = message;
+      const { responsibleId, studentsIds } = message;
       const socketIOAdapter = newSocketIOAdapter(io);
-      await rankingService.dismissedStudentFromRanking(room as string, Number(responsibleId), socketIOAdapter);
+      if (!studentsIds) {
+        await rankingService.dismissedResponsibleFromRanking(room as string, Number(responsibleId), socketIOAdapter);
+      } else {
+        await rankingService.dismissedStudentFromRanking(
+          room as string,
+          Number(responsibleId),
+          studentsIds,
+          socketIOAdapter
+        );
+      }
       logger.info('[dismissed-students] executed');
     });
 

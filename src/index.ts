@@ -20,7 +20,7 @@ const initDependencies = async (config: Config) => {
       target: 'pino-pretty',
       options: {
         colorize: true,
-        translateTime: true
+        translateTime: 'UTC:yyyy-mm-dd HH:MM:ss.l o'
       }
     }
   });

@@ -1,4 +1,5 @@
 import { Responsible } from '../../domain/responsible';
+import { Config } from '../../infrastructure/config';
 import { RankingCriteria, ResponsibleRanking } from '../dtos/ranking';
 import { RankingRepository } from '../interfaces/ranking';
 import { ResponsibleRepository } from '../interfaces/responsible';
@@ -23,11 +24,12 @@ const dismissedResponsibleFromRanking = async (
   rankingRepository: RankingRepository,
   responsibleRepository: ResponsibleRepository,
   socket: Socket,
+  config: Config,
   key: string,
   responsibleId: number
 ) => {
   await rankingRepository.removeResponsible(key, responsibleId);
-  const ranking = await getRanking(rankingRepository, responsibleRepository, studentRepository, key);
+  const ranking = await getRanking(rankingRepository, responsibleRepository, studentRepository, config, key);
 
   socket.emit('responsible-ranking', {
     msg: JSON.stringify({ ranking }),
@@ -48,6 +50,7 @@ const dismissedStudentFromRanking = async (
   rankingRepository: RankingRepository,
   responsibleRepository: ResponsibleRepository,
   socket: Socket,
+  config: Config,
   key: string,
   responsibleId: number,
   studentsIds: number[]
@@ -61,7 +64,7 @@ const dismissedStudentFromRanking = async (
 
   if (students.length === studentsIds.length) await rankingRepository.removeResponsible(key, responsibleId);
 
-  const ranking = await getRanking(rankingRepository, responsibleRepository, studentRepository, key);
+  const ranking = await getRanking(rankingRepository, responsibleRepository, studentRepository, config, key);
 
   socket.emit('responsible-ranking', {
     msg: JSON.stringify({ ranking }),
@@ -91,6 +94,7 @@ const getRanking = async (
   rankingRepository: RankingRepository,
   responsibleRepository: ResponsibleRepository,
   studentRepository: StudentRepository,
+  config: Config,
   key: string
 ): Promise<ResponsibleRanking[]> => {
   const ranking = await rankingRepository.getRanking(key);
@@ -108,6 +112,7 @@ const getRanking = async (
     );
     responsibleRanked.rank.distanceMeters = lastDistance;
     responsibleRanked.rank.estimatedTime = lastEstimatedTime;
+    responsibleRanked.rank.arrived = lastEstimatedTime <= config.arrivedThresholdSeconds;
   }
 
   return ranking;
@@ -116,9 +121,11 @@ const getRanking = async (
 const newRankingService = (
   rankingRepository: RankingRepository,
   responsibleRepository: ResponsibleRepository,
-  studentRepository: StudentRepository
+  studentRepository: StudentRepository,
+  config: Config
 ): RankingService => ({
-  getRanking: async (key: string) => getRanking(rankingRepository, responsibleRepository, studentRepository, key),
+  getRanking: async (key: string) =>
+    getRanking(rankingRepository, responsibleRepository, studentRepository, config, key),
   updateRanking: async (key: string, responsible: Responsible, rankingCriteria: RankingCriteria) =>
     updateRanking(rankingRepository, key, responsible, rankingCriteria),
   dismissedStudentFromRanking: async (key: string, responsibleId: number, studentsIds: number[], socket: Socket) =>
@@ -127,6 +134,7 @@ const newRankingService = (
       rankingRepository,
       responsibleRepository,
       socket,
+      config,
       key,
       responsibleId,
       studentsIds
@@ -137,6 +145,7 @@ const newRankingService = (
       rankingRepository,
       responsibleRepository,
       socket,
+      config,
       key,
       responsibleId
     ),

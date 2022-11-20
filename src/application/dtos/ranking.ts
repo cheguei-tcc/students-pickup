@@ -2,7 +2,7 @@ import { Responsible } from '../../domain/responsible';
 
 type ResponsibleRanking = {
   responsible: Responsible;
-  rank: { value: number } & Partial<RankingCriteria>;
+  rank: { value: number; arrived?: boolean } & Partial<RankingCriteria>;
 };
 
 type RankingCriteria = {

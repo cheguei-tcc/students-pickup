@@ -30,7 +30,12 @@ const initDependencies = async (config: Config) => {
   const redisResponsibleRepository = newRedisResponsibleRepository(redisClient);
   const redisStudentRepository = newRedisStudentRepository(redisClient);
 
-  const rankingService = newRankingService(redisRankingRepository, redisResponsibleRepository, redisStudentRepository);
+  const rankingService = newRankingService(
+    redisRankingRepository,
+    redisResponsibleRepository,
+    redisStudentRepository,
+    config
+  );
   const responsibleConsumerService = newResponsibleConsumerService(logger, redisResponsibleRepository);
 
   // ranking service is on server construct to emit ranking to new monitors connected to socket

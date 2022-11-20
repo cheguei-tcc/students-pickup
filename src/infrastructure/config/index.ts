@@ -9,6 +9,7 @@ type Config = {
   awsRegion: string;
   distanceRankingWeight: number;
   estimatedTimeRankingWeight: number;
+  arrivedThresholdSeconds: number;
   weightedScore: boolean;
 };
 
@@ -22,6 +23,7 @@ const configFromEnv = (): Config => ({
   awsRegion: process.env.AWS_DEFAULT_REGION ?? 'sa-east-1',
   distanceRankingWeight: Number(process.env.DISTANCE_RANKING_WEIGHT) || 0.9,
   estimatedTimeRankingWeight: Number(process.env.ESTIMATED_TIME_RANKING_WEIGHT) || 0.1,
+  arrivedThresholdSeconds: Number(process.env.ARRIVED_THRESHOLD_SECONDS) || 60,
   redisHost: process.env.REDIS_HOST || 'localhost',
   weightedScore: process.env.WEIGHTED_SCORE === 'true'
 });
